@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
+import java.util.HashMap;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,6 +29,15 @@ public class CategoryController {
             categoryService.createCategoryRelationship(categoryRelationship);
         }
         return new ResponseEntity(HttpStatus.CREATED);
+    }
+
+    @GetMapping("/categories/{category-id}")
+    public ResponseEntity getCategoryById(@Positive @PathVariable("category-id") Long categoryId) {
+        List<ChildParentId> categoryRelationships = categoryService.getCategoryRelationships(categoryId);
+        List<Category> categories = categoryService.getCategories(categoryId, categoryRelationships);
+        HashMap<Long, List<Long>> categoryRelationHashMap = categoryMapper.categoryRelationshipsToHashMap(categoryRelationships);
+        HashMap<Long, String> categoryHashMap = categoryMapper.categoriesToHashMap(categories);
+        return new ResponseEntity<>(categoryMapper.mapCategoriesByCategoryId(categoryId, categoryRelationHashMap, categoryHashMap, new CategoryDto.Response()),HttpStatus.OK);
     }
 
 }

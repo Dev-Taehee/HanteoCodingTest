@@ -5,6 +5,8 @@ import com.problem1.exception.ExceptionCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -28,6 +30,23 @@ public class CategoryService {
     public Category findCategory(Long categoryId) {
         Optional<Category> optionalCategory = categoryRepository.findById(categoryId);
         return optionalCategory.orElseThrow(() -> new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND));
+    }
+
+    public List<ChildParentId> getCategoryRelationships(Long categoryId) {
+        List<ChildParentId> categoryRelationships = categoryRelationshipRepository.findCategoryRelationships(categoryId);
+        return categoryRelationships;
+    }
+
+    public List<Category> getCategories(Long categoryId, List<ChildParentId> categoryRelationships) {
+        List<Long> ids = new ArrayList<>();
+        ids.add(categoryId);
+
+        for(ChildParentId categoryRelationship : categoryRelationships) {
+            ids.add(categoryRelationship.getChild_Id());
+        }
+
+        List<Category> categories = categoryRepository.findAllById(ids);
+        return categories;
     }
 
 }
