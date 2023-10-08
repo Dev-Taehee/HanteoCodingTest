@@ -32,7 +32,15 @@ public class CategoryController {
     }
 
     @GetMapping("/categories/{category-id}")
-    public ResponseEntity getCategoryById(@Positive @PathVariable("category-id") Long categoryId) {
+    public ResponseEntity getCategoryById(@Positive @PathVariable("category-id") String categoryIdx) {
+        Long categoryId;
+        if(isNumeric(categoryIdx)) {
+            categoryId = Long.parseLong(categoryIdx);
+        } else {
+            Category category = categoryService.findCategoryByName(categoryIdx);
+            categoryId = category.getCategoryId();
+        }
+
         List<ChildParentId> categoryRelationships = categoryService.getCategoryRelationships(categoryId);
         List<Category> categories = categoryService.getCategories(categoryId, categoryRelationships);
         HashMap<Long, List<Long>> categoryRelationHashMap = categoryMapper.categoryRelationshipsToHashMap(categoryRelationships);
@@ -40,4 +48,12 @@ public class CategoryController {
         return new ResponseEntity<>(categoryMapper.mapCategoriesByCategoryId(categoryId, categoryRelationHashMap, categoryHashMap, new CategoryDto.Response()),HttpStatus.OK);
     }
 
+    private boolean isNumeric(String str) {
+        try {
+            Long.parseLong(str);
+            return true;
+        } catch(NumberFormatException e) {
+            return false;
+        }
+    }
 }
