@@ -5,6 +5,7 @@ import com.problem1.exception.ExceptionCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.NonUniqueResultException;
 import java.util.*;
 
 @Service
@@ -37,8 +38,17 @@ public class CategoryService {
     }
 
     public Category findCategoryByName(String categoryName) {
-        Optional<Category> optionalCategory = categoryRepository.findByCategoryName(categoryName);
+        Optional<Category> optionalCategory;
+        if(!categoryName.equals("공지사항")) {
+            optionalCategory = categoryRepository.findByCategoryName(categoryName);
+        } else { // 공지사항과 같이 여러 값이 있는 경우
+            return null;
+        }
         return optionalCategory.orElseThrow(() -> new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND));
+    }
+
+    public List<Category> findCategoriesByName(String categoryName) {
+        return categoryRepository.findAllByCategoryName(categoryName);
     }
 
     public List<ChildParentId> getCategoryRelationships(Long categoryId) {

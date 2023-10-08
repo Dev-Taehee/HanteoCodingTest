@@ -49,4 +49,14 @@ public interface CategoryMapper {
 
         return response.toBuilder().subcategories(list).build();
     }
+
+    default List<CategoryDto.Response> mapSameCategories(List<Category> categories) {
+        List<CategoryDto.Response> responses = new ArrayList<>();
+
+        for(Category category : categories) {
+            CategoryDto.Response response = CategoryDto.Response.builder().categoryId(category.getCategoryId()).categoryName(category.getCategoryName()).build();
+            responses.add(response);
+        }
+        return responses;
+    }
 }

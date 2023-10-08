@@ -38,6 +38,9 @@ public class CategoryController {
             categoryId = Long.parseLong(categoryIdx);
         } else {
             Category category = categoryService.findCategoryByName(categoryIdx);
+            if(category == null) { // 공지사항과 같이 여러 카테고리가 같은 이름을 갖는 경우를 처리해야한다.
+                return getCategoriesById(categoryIdx);
+            }
             categoryId = category.getCategoryId();
         }
 
@@ -46,6 +49,12 @@ public class CategoryController {
         HashMap<Long, List<Long>> categoryRelationHashMap = categoryMapper.categoryRelationshipsToHashMap(categoryRelationships);
         HashMap<Long, String> categoryHashMap = categoryMapper.categoriesToHashMap(categories);
         return new ResponseEntity<>(categoryMapper.mapCategoriesByCategoryId(categoryId, categoryRelationHashMap, categoryHashMap, new CategoryDto.Response()),HttpStatus.OK);
+    }
+
+    private ResponseEntity getCategoriesById(String categoryIdx) { // TO DO: 공지사항과 같이 최하단이 아닌 카테고리가 여러개 있는 경우에는 다른 방법으로 구현해야한다.
+        List<Category> sameCategories = categoryService.findCategoriesByName(categoryIdx);
+
+        return new ResponseEntity(categoryMapper.mapSameCategories(sameCategories), HttpStatus.OK);
     }
 
     private boolean isNumeric(String str) {
