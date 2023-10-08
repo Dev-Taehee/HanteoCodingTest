@@ -5,9 +5,7 @@ import com.problem1.exception.ExceptionCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -16,10 +14,16 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryRelationshipRepository categoryRelationshipRepository;
 
+    private HashSet<String> hashSet = new HashSet<>(){{add("익명게시판");}};
+
     public Category createCategory(Category category) {
-        // 카테고리 이름이 중복될 때, 부모 카테고리도 중복되는지 확인해야 함
-        // 익명게시판의 경우 저장하지 않고 익명게시판의 카테고리 객체를 반환해야한다.
-        // -> 확장성을 고려하면 익명게시판과 같이 동일한 카테고리가 여러 부모를 가지는 경우를 해당하는 Map을 생성해두고 확인하는 것이 좋을 것 같다.
+        // TO DO: 카테고리 이름이 중복될 때, 부모 카테고리도 중복되는지 확인해야 함
+        if(hashSet.contains(category.getCategoryName())) { // 익명게시판의 경우 이미 존재한다면 저장하지 않고 익명게시판의 카테고리 객체를 반환해야한다.
+            Optional<Category> optionalCategory = categoryRepository.findByCategoryName(category.getCategoryName());
+            if(optionalCategory.isPresent()) {
+                return optionalCategory.get();
+            }
+        }
         return categoryRepository.save(category);
     }
 
@@ -29,6 +33,11 @@ public class CategoryService {
 
     public Category findCategory(Long categoryId) {
         Optional<Category> optionalCategory = categoryRepository.findById(categoryId);
+        return optionalCategory.orElseThrow(() -> new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND));
+    }
+
+    public Category findCategoryByName(String categoryName) {
+        Optional<Category> optionalCategory = categoryRepository.findByCategoryName(categoryName);
         return optionalCategory.orElseThrow(() -> new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND));
     }
 
